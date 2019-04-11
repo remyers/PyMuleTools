@@ -1,10 +1,16 @@
 from txtenna_segment import TxTennaSegment
 
-
 class SegmentStorage:
     def __init__(self):
         self.__payloads = {}
         self.__transactionLookup = {}
+
+    def get_raw_tx(self, segments):
+        raw_tx = ""
+        for segment in segments:
+            if segment.payload is not None:
+                raw_tx += segment.payload
+        return raw_tx
 
     def get(self, payload_id):
         return self.__payloads[payload_id] if payload_id in self.__payloads else None
@@ -12,6 +18,13 @@ class SegmentStorage:
     def get_by_transaction_id(self, tx_id):
         if tx_id in self.__transactionLookup:
             return self.__payloads[self.__transactionLookup[tx_id]]
+        return None
+
+    def get_transaction_id(self, payload_id):
+        if payload_id in self.__payloads:
+            for segment in self.__payloads[payload_id]:
+                    if segment.tx_hash is not None:
+                        return segment.tx_hash
         return None
 
     def remove(self, payload_id):
@@ -22,7 +35,7 @@ class SegmentStorage:
                     break
             del self.__payloads[payload_id]
 
-    def put(self, segment: TxTennaSegment):
+    def put(self, segment):
         if segment.payload_id in self.__payloads:
             payload = self.__payloads[segment.payload_id]
             payload.append(segment)
